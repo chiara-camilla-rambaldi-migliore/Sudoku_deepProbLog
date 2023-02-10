@@ -153,8 +153,8 @@ def to_vector(y):
 
 
 # initialze the dataset
-image_file='deepproblog/src/deepproblog/examples/Sudoku/data/image_dict_reg_100.p'
-label_file='deepproblog/src/deepproblog/examples/Sudoku/data/label_dict_reg_100.p'
+image_file='data/image_dict_reg_100.p'
+label_file='data/label_dict_reg_100.p'
 
 transform = transforms.Compose([
             transforms.ToPILImage(),

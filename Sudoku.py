@@ -32,7 +32,7 @@ network = Sudoku_Net()
 net = Network(network, "sudoku_net", batching=True)
 net.optimizer = torch.optim.Adam(network.parameters(), lr=1e-3)
 
-model = Model("deepproblog/src/deepproblog/examples/Sudoku/sudoku_model.pl", [net])
+model = Model("sudoku_model.pl", [net])
 
 model.set_engine(ExactEngine(model), cache=True)
 
