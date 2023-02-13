@@ -109,6 +109,12 @@ solve6x6(Fake, Rows) :-
     rectangles2x3(Cs, Ds),
     rectangles2x3(Es, Fs).
 
+solveRelaxed(Fake, Rows) :-
+    realRows(Fake, Rows),
+    append(Rows, Vs),
+    listInList(Vs, [1,2,3,4,5,6,7,8,9]),
+    maplist(allDiff, Rows).
+
 sudoku(1, [
     [0,0,0,5,4,0,0,0,0],
     [2,0,0,3,0,7,9,0,0],

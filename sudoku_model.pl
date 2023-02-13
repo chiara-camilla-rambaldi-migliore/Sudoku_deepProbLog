@@ -1,5 +1,3 @@
-:- use_module(library(clpfd)).
-
 nn(sudoku_net,[X, R, C],Y,[0,1,2,3,4,5,6,7,8,9]) :: digit(X,R,C,Y).
 
 createFake(X, [
@@ -49,42 +47,40 @@ createFake(X, [
     digit(X,9,4,d76), digit(X,9,5,d77), digit(X,9,6,d78),
     digit(X,9,7,d79), digit(X,9,8,d80), digit(X,9,9,d81).
 
-inList(X, [X|_]).
-inList(X, [_|Tail]) :- 
-    inList(X, Tail).
+createFake4x4(X, [
+    [d1,  d2,  d3,  d4 ],
+    [d5,  d6,  d7,  d8 ],
+    [d9,  d10, d11, d12],
+    [d13, d14, d15, d16]
+]) :- 
+    digit(X,1,1,d1), digit(X,1,2,d2), digit(X,1,3,d3), digit(X,1,4,d4), 
+    digit(X,1,5,d5), digit(X,1,6,d6), digit(X,1,7,d7), digit(X,1,8,d8), 
+    digit(X,1,9,d9), digit(X,2,1,d10), digit(X,2,2,d11), digit(X,2,3,d12),
+    digit(X,2,4,d13), digit(X,2,5,d14), digit(X,2,6,d15), digit(X,2,7,d16).
 
-listInList([], _).
-listInList([H|T], L) :- inList(H, L); listInList(T, L).
+createFake6x6(X, [
+    [ d1,  d2,  d3,  d4,  d5,  d6],
+    [ d7,  d8,  d9, d10, d11, d12],
+    [d13, d14, d15, d16, d17, d18],
+    [d19, d20, d21, d22, d23, d24], 
+    [d25, d26, d27, d28, d29, d30],
+    [d31, d32, d33, d34, d35, d36]
+]) :- 
+    digit(X,1,1,d1), digit(X,1,2,d2), digit(X,1,3,d3),
+    digit(X,1,4,d4), digit(X,1,5,d5), digit(X,1,6,d6),
+    digit(X,1,7,d7), digit(X,1,8,d8), digit(X,1,9,d9),
+    digit(X,2,1,d10), digit(X,2,2,d11), digit(X,2,3,d12),
+    
+    digit(X,2,4,d13), digit(X,2,5,d14), digit(X,2,6,d15),
+    digit(X,2,7,d16), digit(X,2,8,d17), digit(X,2,9,d18),
+    digit(X,3,1,d19), digit(X,3,2,d20), digit(X,3,3,d21),
+    digit(X,3,4,d22), digit(X,3,5,d23), digit(X,3,6,d24),
+    
+    digit(X,3,7,d25), digit(X,3,8,d26), digit(X,3,9,d27),
+    digit(X,4,1,d28), digit(X,4,2,d29), digit(X,4,3,d30),
+    digit(X,4,4,d31), digit(X,4,5,d32), digit(X,4,6,d33),
+    digit(X,4,7,d34), digit(X,4,8,d35), digit(X,4,9,d36).
 
-solve(X, Rows) :-
-    createFake(X, Fake),
-    realRows(Fake, Rows),
-    length(Rows, 9),
-    % maplist(:Goal, ?List1)
-    % call(same_length(Rows), Rows[i]), cioè same_length(Rows, Rows[i])
-    % True if Goal is successfully applied on all matching elements of the list. The maplist family of predicates is defined as:
-    maplist(same_length(Rows), Rows),
-    % append(+ListOfLists, ?List)
-    % Concatenate a list of lists
-    append(Rows, Vs),
-    % +Vars ins +Domain
-    % The variables in the list Vars are elements of Domain
-    % Vs ins 1..9,
-    listInList(Vs, [1,2,3,4,5,6,7,8,9]),
-    maplist(all_distinct, Rows),
-    transpose(Rows, Columns),
-    maplist(all_distinct, Columns),
-    Rows = [As, Bs, Cs, Ds, Es, Fs, Gs, Hs, Is],
-    squares(As, Bs, Cs),
-    squares(Ds, Es, Fs),
-    squares(Gs, Hs, Is).
-
-squares([],[],[]).
-squares([N1,N2,N3|Ns1],
-        [N4,N5,N6|Ns2],
-        [N7,N8,N9|Ns3]) :-
-    all_distinct([N1,N2,N3,N4,N5,N6,N7,N8,N9]),
-    squares(Ns1, Ns2, Ns3).
 
 giveRightNumber(0, _).
 giveRightNumber(FH, FH).
@@ -102,3 +98,107 @@ realRows(FakeRows, Rows) :-
     Rows = [H|T],
     realColumns(FH, H),
     realRows(FT, T).
+    
+inList(X, [X|_]).
+inList(X, [_|Tail]) :- 
+    inList(X, Tail).
+
+listInList([], _).
+listInList([H|T], L) :- inList(H, L), listInList(T, L).
+
+allDiff([]).
+allDiff([X|Tail]) :- 
+    \+ inList(X, Tail),
+    allDiff(Tail).
+
+latinSquare([], []).
+latinSquare([H_Rows|T_Rows], [H_Cols|T_Cols]) :-
+    allDiff(H_Rows),
+    allDiff(H_Cols),
+    latinSquare(T_Rows, T_Cols).
+
+itemsNumber(0, []).
+itemsNumber(X, [_|L]) :-
+    itemsNumber(X2, L),
+    X is X2+1.
+
+matrixDim(0, 0, []).
+matrixDim(1, C, [H|[]]) :-
+    itemsNumber(C, H).
+
+matrixDim(R, C, [H|T]) :-
+    itemsNumber(R, [H|T]),
+    itemsNumber(C, H),
+    matrixDim(R2, C, T),
+    R is R2+1.
+
+
+transpose([[]|_], []).
+transpose(Matrix, [Row|Rows]) :- transpose_1st_col(Matrix, Row, RestMatrix),
+                                 transpose(RestMatrix, Rows).
+transpose_1st_col([], [], []).
+transpose_1st_col([[H|T]|Rows], [H|Hs], [T|Ts]) :- transpose_1st_col(Rows, Hs, Ts).
+
+squares([],[],[]).
+squares([N1,N2,N3|Ns1],
+        [N4,N5,N6|Ns2],
+        [N7,N8,N9|Ns3]) :-
+    allDiff([N1,N2,N3,N4,N5,N6,N7,N8,N9]),
+    squares(Ns1, Ns2, Ns3).
+
+squares2x2([],[]).
+squares2x2([N1,N2|Ns1],
+           [N3,N4|Ns2]) :-
+    allDiff([N1,N2,N3,N4]),
+    squares2x2(Ns1, Ns2).
+
+rectangles2x3([],[]).
+rectangles2x3([N1,N2,N3|Ns1],
+              [N4,N5,N6|Ns2]) :-
+    allDiff([N1,N2,N3,N4,N5,N6]),
+    rectangles2x3(Ns1, Ns2).
+
+solve(X, Rows) :-
+    createFake(X, Fake),
+    realRows(Fake, Rows),
+    append(Rows, Vs),
+    listInList(Vs, [1,2,3,4,5,6,7,8,9]),
+    maplist(allDiff, Rows),
+    transpose(Rows, Columns),
+    maplist(allDiff, Columns),
+    Rows = [As, Bs, Cs, Ds, Es, Fs, Gs, Hs, Is],
+    squares(As, Bs, Cs),
+    squares(Ds, Es, Fs),
+    squares(Gs, Hs, Is).
+
+solve4x4(X, Rows) :-
+    createFake4x4(X, Fake),
+    realRows(Fake, Rows),
+    append(Rows, Vs),
+    listInList(Vs, [1,2,3,4]),
+    maplist(allDiff, Rows),
+    transpose(Rows, Columns),
+    maplist(allDiff, Columns),
+    Rows = [As, Bs, Cs, Ds],
+    squares2x2(As, Bs),
+    squares2x2(Cs, Ds).
+
+solve6x6(X, Rows) :-
+    createFake6x6(X, Fake),
+    realRows(Fake, Rows),
+    append(Rows, Vs),
+    listInList(Vs, [1,2,3,4,5,6]),
+    maplist(allDiff, Rows),
+    transpose(Rows, Columns),
+    maplist(allDiff, Columns),
+    Rows = [As, Bs, Cs, Ds, Es, Fs],
+    rectangles2x3(As, Bs),
+    rectangles2x3(Cs, Ds),
+    rectangles2x3(Es, Fs).
+
+solveRelaxed(X, Rows) :-
+    createFake(X, Fake),
+    realRows(Fake, Rows),
+    append(Rows, Vs),
+    listInList(Vs, [1,2,3,4,5,6,7,8,9]),
+    maplist(allDiff, Rows).
