@@ -23,37 +23,6 @@ def load_pickle(file_to_load):
         labels = pickle.load(fp)
     return labels
 
-def change_labels_dataset(label_path):
-    label_dict=load_pickle(label_path)
-    new_label_dict={}
-    for label_key in label_dict:
-        label = to_vector(label_dict[label_key])
-        position = 1
-        for pos_label in label:
-            new_label_dict[f"{label_key}_{position}"] = pos_label
-            position += 1
-    return new_label_dict
-
-def change_image_dataset(image_path):
-    image_dict=load_pickle(image_path)
-    new_image_dict={}
-    for image_key in image_dict:
-        for position in range(1, 82):
-            position_list = []
-            for _ in range(image_dict[image_key].shape[1]):
-                position_list.append([position, position, position])
-            position_list = np.array([position_list])
-            new_image_dict[f"{image_key}_{position}"] = np.append(image_dict[image_key], position_list, 0)
-    return new_image_dict
-
-def change_image_dataset_2(image_path):
-    image_dict=load_pickle(image_path)
-    new_image_dict={}
-    for image_key in image_dict:
-        for position in range(1, 82):
-            new_image_dict[f"{image_key}_{position}"] = np.array([position, image_dict[image_key]])
-    return new_image_dict
-
 def getDatasets(
         image_path, 
         label_path, 
@@ -123,10 +92,18 @@ class Sudoku_dataset(Dataset, TorchDataset):
         # Build substitution dictionary for the arguments
         subs = dict()
         sudoku_img = Term("sudoku")
+        sudoku_lbl = Term("label")
         subs[sudoku_img] = Term(
             "tensor",
             Term(
                 self.dataset_name,
+                Constant(filename),
+            ),
+        )
+        subs[sudoku_lbl] = Term(
+            "tensor",
+            Term(
+                f"{self.dataset_name}_results",
                 Constant(filename),
             ),
         )
@@ -136,7 +113,7 @@ class Sudoku_dataset(Dataset, TorchDataset):
             Term(
                 self.function_name,
                 sudoku_img,
-                Constant(expected_result),
+                sudoku_lbl,
             ),
             subs,
         )
@@ -165,3 +142,18 @@ transform = transforms.Compose([
             ])
 
 datasets, image_dict, label_dict = getDatasets(image_file, label_file, None, {"train": 25, "test": 75})
+
+
+class SudokuTensorSource(object):
+    def __init__(self, subset, dict, datasets, transform = None):
+        self.dataset = {}
+        self.transform = transform
+        for key in datasets[subset]:
+            self.dataset[key] = dict[key]
+
+    def __getitem__(self, item):
+        x = self.dataset[str(item[0])]
+        x = torch.from_numpy(x).permute(2,0,1).float()
+        if self.transform:
+            x = self.transform(x)
+        return x

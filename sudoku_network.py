@@ -30,7 +30,9 @@ class Sudoku_Net(nn.Module):
         self.fc1=nn.Linear(41472,81*10)
         self.dropout5=nn.Dropout(p=.25)
         
-    def forward(self, x):
+    def forward(self, *x):
+        batch_size=len(x)
+
         x = self.dropout1(self.conv1_bn(self.conv1(x)))
         x = F.relu(x)
         x = self.dropout2(self.conv2_bn(self.conv2(x)))
@@ -45,7 +47,6 @@ class Sudoku_Net(nn.Module):
         x= self.maxpool(x)
         x=self.conv1x1_1(x)
         x=nn.Softmax(1)(x)
-        batch_size=len(x)
         x=x.permute(0,2,3,1).contiguous().view(batch_size,810)
         x=x.view(batch_size,81,10)
         return x
