@@ -86,7 +86,6 @@ class Sudoku_dataset(Dataset, TorchDataset):
     def to_query(self, i: int) -> Query:
         """Generate queries"""
         filename = self.idx_to_filename[i]
-        expected_result = self.label_dict[filename].tolist()
 
 
         # Build substitution dictionary for the arguments
@@ -100,13 +99,6 @@ class Sudoku_dataset(Dataset, TorchDataset):
                 Constant(filename),
             ),
         )
-        # subs[sudoku_lbl] = Term(
-        #     "tensor",
-        #     Term(
-        #         f"{self.dataset_name}_results",
-        #         Constant(filename),
-        #     ),
-        # )
 
         # Build query
         return Query(
@@ -129,21 +121,15 @@ def to_vector(y):
     return y_vector
 
 
-# initialze the dataset
-image_file='data/image_dict2x3.p'
-label_file='data/label_dict_2x3.p'
-
-transform = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.Grayscale(),
-            #transforms.Resize((32,32)), #2x2
-            transforms.Resize((32,36)), #2x3
-            #transforms.Resize((36,36)), #3x3
-            transforms.ToTensor(),
-            transforms.Normalize([.5],[.5])
-            ])
-
-datasets, image_dict, label_dict = getDatasets(image_file, label_file, 23, {"train": 17, "test": 75})
+def getTransform(sudoku_format):
+    size = {"2x2": (32,32), "2x3": (32,36), "3x3": (36,36)}
+    return transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.Grayscale(),
+                transforms.Resize(size[sudoku_format]),
+                transforms.ToTensor(),
+                transforms.Normalize([.5],[.5])
+                ])
 
 
 class SudokuTensorSource(object):
