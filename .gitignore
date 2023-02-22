@@ -2,5 +2,7 @@
 *.png
 *.pdf
 *.csv
+*.xlsx
 __pycache__/*
 */__pycache__/*
+.DS_Store
