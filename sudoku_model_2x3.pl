@@ -47,7 +47,7 @@ transpose_1st_col([], [], []).
 transpose_1st_col([[H|T]|Rows], [H|Hs], [T|Ts]) :- transpose_1st_col(Rows, Hs, Ts).
 
 
-solve2x3(X, Label) :-
+solve2x3_both(X, Label) :-
     createFake2x3(X, Fake),
     realRows(Fake, Rows),
     maplist(listInList([1,2,3]), Rows),
@@ -55,6 +55,24 @@ solve2x3(X, Label) :-
     transpose(Rows, Columns),
     maplist(allDiff, Columns),
     label_empty(Label, Fake),
+    label_compl(Label, Rows).
+
+solve2x3_empty(X, Label) :-
+    createFake2x3(X, Fake),
+    realRows(Fake, Rows),
+    maplist(listInList([1,2,3]), Rows),
+    maplist(allDiff, Rows),
+    transpose(Rows, Columns),
+    maplist(allDiff, Columns),
+    label_empty(Label, Fake).
+
+solve2x3_compl(X, Label) :-
+    createFake2x3(X, Fake),
+    realRows(Fake, Rows),
+    maplist(listInList([1,2,3]), Rows),
+    maplist(allDiff, Rows),
+    transpose(Rows, Columns),
+    maplist(allDiff, Columns),
     label_compl(Label, Rows).
 
 label_empty(1, L) :- L = [[1,0,0],[0,1,2]].
