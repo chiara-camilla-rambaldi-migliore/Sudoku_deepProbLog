@@ -92,7 +92,7 @@ class Sudoku_dataset(Dataset, TorchDataset):
         # Build substitution dictionary for the arguments
         subs = dict()
         sudoku_img = Term("sudoku")
-        sudoku_lbl = Term("label")
+        # sudoku_lbl = Term("label")
         subs[sudoku_img] = Term(
             "tensor",
             Term(
@@ -100,20 +100,20 @@ class Sudoku_dataset(Dataset, TorchDataset):
                 Constant(filename),
             ),
         )
-        subs[sudoku_lbl] = Term(
-            "tensor",
-            Term(
-                f"{self.dataset_name}_results",
-                Constant(filename),
-            ),
-        )
+        # subs[sudoku_lbl] = Term(
+        #     "tensor",
+        #     Term(
+        #         f"{self.dataset_name}_results",
+        #         Constant(filename),
+        #     ),
+        # )
 
         # Build query
         return Query(
             Term(
                 self.function_name,
                 sudoku_img,
-                sudoku_lbl,
+                Constant(int(filename.replace(".png", ""))),
             ),
             subs,
         )
@@ -130,18 +130,20 @@ def to_vector(y):
 
 
 # initialze the dataset
-image_file='data/image_dict_reg_100.p'
-label_file='data/label_dict_reg_100.p'
+image_file='data/image_dict2x3.p'
+label_file='data/label_dict_2x3.p'
 
 transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Grayscale(),
-            transforms.Resize((250,250)), #resize images
+            #transforms.Resize((32,32)), #2x2
+            transforms.Resize((32,36)), #2x3
+            #transforms.Resize((36,36)), #3x3
             transforms.ToTensor(),
             transforms.Normalize([.5],[.5])
             ])
 
-datasets, image_dict, label_dict = getDatasets(image_file, label_file, None, {"train": 25, "test": 75})
+datasets, image_dict, label_dict = getDatasets(image_file, label_file, 23, {"train": 17, "test": 75})
 
 
 class SudokuTensorSource(object):
